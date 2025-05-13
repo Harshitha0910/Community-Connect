@@ -1,0 +1,27 @@
+client/node_modules/
+server/node_modules/
+
+# Environment variables
+client/.env
+server/.env
+
+# Build output
+client/build/
+server/dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS/system files
+.DS_Store
+Thumbs.db
+
+# Optional: VSCode or IDE folders
+.vscode/
+.idea/
+
+# Coverage reports
+coverage/
