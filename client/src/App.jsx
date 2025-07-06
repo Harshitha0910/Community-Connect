@@ -28,6 +28,8 @@ function App() {
         <Route path="/maintenance" element={<MaintenancePage />} />
         <Route path="/notices" element={<NoticeBoardPage />} />
         <Route path="/complaints" element={<ComplaintsPage />} />
+        {/* <Route path="/admin-dashboard" element={<AdminDashboardPage />} /> */}
+
       </Routes>
   ) 
 }

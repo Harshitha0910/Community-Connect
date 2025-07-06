@@ -50,7 +50,12 @@ const CallToAction = () => {
                         Contact Sales
                     </a>
                     </div>
-                    <p className="mt-6 font-mono text-base text-black">Already have an account? <a href="#" title="" className="text-blue-600 transition-all duration-200 hover:text-blue-700 focus:text-blue-700 hover:underline">Log in</a></p>
+                    {/* <p className="mt-6 font-mono text-base text-black">Already have an account? <a href="#" title="" className="text-blue-600 transition-all duration-200 hover:text-blue-700 focus:text-blue-700 hover:underline">Log in</a></p> */}
+                            
+                    <p className="mt-6 font-mono text-base text-black">
+                        Already have an account? <Link to="/login" className="text-blue-600 hover:text-blue-700 underline">Log in</Link>
+                    </p>
+        
                 </div>
             </div>
         </section>
