@@ -1,3 +1,4 @@
+// C:\Users\harsh\Desktop\Community-Connect\server\models\User.js 
 import mongoose from 'mongoose';
 
 const userSchema = mongoose.Schema({

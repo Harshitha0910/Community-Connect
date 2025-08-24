@@ -13,6 +13,9 @@ import ServicePage from './pages/ServicePage'
 import MaintenancePage from './pages/MaintenancePage'
 import NoticeBoardPage from './pages/NoticeBoardPage';
 import ComplaintsPage from './pages/ComplaintsPage';
+import PrivateMessages from './pages/PrivateMessages';  
+import Forum from './pages/ForumPage';
+
 
 function App() {
   const [count, setCount] = useState(0)
@@ -27,8 +30,9 @@ function App() {
         <Route path="/service-directory" element={<ServicePage />} />
         <Route path="/maintenance" element={<MaintenancePage />} />
         <Route path="/notices" element={<NoticeBoardPage />} />
-        <Route path="/complaints" element={<ComplaintsPage />} />
-        {/* <Route path="/admin-dashboard" element={<AdminDashboardPage />} /> */}
+        <Route path="/complaints" element={<ComplaintsPage />} /> 
+        <Route path="/messages/private" element={<PrivateMessages />} />
+        <Route path="/forum" element={<Forum />} />
 
       </Routes>
   ) 
