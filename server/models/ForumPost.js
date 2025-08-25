@@ -50,8 +50,6 @@ const forumPostSchema = new mongoose.Schema(
     reactions: {
       likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
       dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], 
-      heart: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-      plus: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], 
     },
 
     // Discussion-specific comments

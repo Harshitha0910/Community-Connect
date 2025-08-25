@@ -17,11 +17,65 @@ export const getPosts = async (req, res) => {
 
 // @desc Create a new post (admin only)
 // @route POST /api/forum
+// export const createPost = async (req, res) => {
+//   const { title, content, type } = req.body;
+//   const image = req.file ? `/uploads/${req.file.filename}` : null;
+
+//   try {
+//     const newPost = await ForumPost.create({
+//       author: req.user._id,
+//       title,
+//       content,
+//       type,
+//       image,
+//     });
+//     const populated = await newPost.populate("author", "name role pic");
+//     res.status(201).json(populated);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// }; 
+// export const createPost = async (req, res) => {
+//   const { title, content, type } = req.body;
+//   const image = req.file ? `/uploads/${req.file.filename}` : null;
+
+//   try {
+//     const newPost = await ForumPost.create({
+//       author: req.user._id,
+//       title,
+//       content,
+//       type,
+//       image,
+//     });
+//     const populated = await newPost.populate("author", "name role pic");
+
+//     // EMIT SOCKET EVENT here
+//     // if (req.app.get("io")) {
+//     //   const io = req.app.get("io"); // make sure io is stored in app
+//     //   io.emit("new post", populated); // emit to all connected clients
+//     // } 
+
+//     // 🔔 Emit to all connected clients
+//     const io = req.app.get("io"); // get io instance
+//     if (io) {
+//       io.emit("new notification", {
+//         type: "forum_post",
+//         message: `New ${type} posted: ${title}`,
+//         post: populated,
+//       });
+//     }
+
+//     res.status(201).json(populated);
+//   } catch (error) {
+//     res.status(400).json({ message: error.message });
+//   }
+// }; 
 export const createPost = async (req, res) => {
   const { title, content, type } = req.body;
   const image = req.file ? `/uploads/${req.file.filename}` : null;
 
   try {
+    // 1️⃣ Create the new post in DB
     const newPost = await ForumPost.create({
       author: req.user._id,
       title,
@@ -29,12 +83,32 @@ export const createPost = async (req, res) => {
       type,
       image,
     });
+
+    // 2️⃣ Populate author details
     const populated = await newPost.populate("author", "name role pic");
+
+    // 3️⃣ Emit notification via Socket.IO
+    const io = req.app.get("io"); // get io instance from Express app
+    if (io) {
+      io.emit("new notification", {
+        type: "forum_post",               // type of notification
+        message: `New ${type} posted: ${title}`, // text message
+        post: populated,                  // include the full post if needed
+      });
+
+      // Optional: emit specific event for new post (frontend can listen separately)
+      io.emit("forum:postAdded", populated);
+    }
+
+    // 4️⃣ Send response back to API caller
     res.status(201).json(populated);
   } catch (error) {
+    console.error("Error creating post:", error.message);
     res.status(400).json({ message: error.message });
   }
 };
+
+
 
 // @desc React to a post (like/dislike toggle)
 // @route PATCH /api/forum/:id/react

@@ -6,7 +6,46 @@ import socket from "../socket";
 const ResidentDashboard = () => {
     const [notifications, setNotifications] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
-    const user = JSON.parse(localStorage.getItem("userInfo"));
+    const user = JSON.parse(localStorage.getItem("userInfo")); 
+    const [recentAnnouncements, setRecentAnnouncements] = useState([]);
+    const [recentDiscussions, setRecentDiscussions] = useState([]);
+    const [recentPolls, setRecentPolls] = useState([]);
+
+    // useEffect(() => {
+    //     if (!user) return;
+
+    //     socket.emit("setup", user);
+
+    //     socket.on("new notification", (notif) => {
+    //         setNotifications((prev) => [notif, ...prev]);
+    //     });
+
+    //     return () => {
+    //         socket.off("new notification");
+    //     };
+    // }, []);  
+
+    // useEffect(() => {
+    //     if (!user) return;
+
+    //     socket.emit("setup", user);
+
+    //     // Existing personal notifications
+    //     socket.on("new notification", (notif) => {
+    //         setNotifications((prev) => [notif, ...prev]);
+    //     });
+
+    //     // NEW: Listen for new forum posts
+    //     socket.on("new post", (post) => {
+    //         const forumNotif = { message: `New forum post: "${post.title}"` };
+    //         setNotifications((prev) => [forumNotif, ...prev]);
+    //     });
+
+    //     return () => {
+    //         socket.off("new notification");
+    //         socket.off("new post"); // remove listener on unmount
+    //     };
+    // }, []); 
 
     useEffect(() => {
         if (!user) return;
@@ -20,7 +59,30 @@ const ResidentDashboard = () => {
         return () => {
             socket.off("new notification");
         };
-    }, []);
+        }, []);
+
+    useEffect(() => {
+        const fetchRecentPosts = async () => {
+            try {
+                const res = await fetch("http://localhost:5000/api/forum/", {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${user?.token}`,
+                    },
+                });
+                const data = await res.json();
+
+                // Filter posts by type
+                setRecentAnnouncements(data.filter(post => post.type === "announcement").slice(0, 1));
+                setRecentDiscussions(data.filter(post => post.type === "discussion").slice(0, 1));
+                setRecentPolls(data.filter(post => post.type === "poll").slice(0, 1));
+            } catch (error) {
+                console.error("Error fetching recent posts:", error);
+            }
+        };
+
+        if (user) fetchRecentPosts();
+    }, [user]);
 
     return (
         <section id='resident-dashboard'>
@@ -38,12 +100,6 @@ const ResidentDashboard = () => {
                         <div className="flex flex-col flex-1 px-3 mt-6">
                             <div className="space-y-4">
                                 <nav className="flex-1 space-y-2">
-
-                                    {/* <a href="#" className="flex items-center px-4 py-2.5 text-sm font-medium transition-all duration-200 text-gray-900 hover:text-white rounded-lg hover:bg-zinc-900 group">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 mr-3">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
-                                        </svg> Community Forum
-                                    </a>  */}
 
                                     <Link to="/forum"  className="flex items-center px-4 py-2.5 text-sm font-medium transition-all duration-200 text-gray-900 hover:text-white rounded-lg hover:bg-zinc-900 group">
                                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6 mr-3">
@@ -107,17 +163,21 @@ const ResidentDashboard = () => {
                             
                         </div>
                     </div>
-            </div>
+                </div>
 
                 <div className="flex bg-gray-50 flex-col flex-1 relative">
 
-                    {/* 🔔 Notification Bell */}
+                    {/* Notification Bell */}
                     <div className="absolute top-4 right-4 z-50">
                         <button
                             onClick={() => setShowDropdown(!showDropdown)}
                             className="relative text-2xl"
                         >
-                            🔔
+                        
+                        <svg class="w-6 h-6 text-black" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.133 12.632v-1.8a5.407 5.407 0 0 0-4.154-5.262.955.955 0 0 0 .021-.106V3.1a1 1 0 0 0-2 0v2.364a.933.933 0 0 0 .021.106 5.406 5.406 0 0 0-4.154 5.262v1.8C6.867 15.018 5 15.614 5 16.807 5 17.4 5 18 5.538 18h12.924C19 18 19 17.4 19 16.807c0-1.193-1.867-1.789-1.867-4.175Zm-13.267-.8a1 1 0 0 1-1-1 9.424 9.424 0 0 1 2.517-6.391A1.001 1.001 0 1 1 6.854 5.8a7.43 7.43 0 0 0-1.988 5.037 1 1 0 0 1-1 .995Zm16.268 0a1 1 0 0 1-1-1A7.431 7.431 0 0 0 17.146 5.8a1 1 0 0 1 1.471-1.354 9.424 9.424 0 0 1 2.517 6.391 1 1 0 0 1-1 .995ZM8.823 19a3.453 3.453 0 0 0 6.354 0H8.823Z"/>
+                        </svg>
+
                             {notifications.length > 0 && (
                                 <span className="absolute -top-2 -right-2 bg-red-500 text-white px-2 py-0.5 rounded-full text-xs">
                                     {notifications.length}
@@ -160,82 +220,90 @@ const ResidentDashboard = () => {
                             <div className="px-4 mx-auto max-w-7xl sm:px-6 md:px-8">
                                 <DynamicText />
                                 {/* KEEP YOUR EXISTING DASHBOARD CARDS HERE */}
-                                                    <div class="container relative flex flex-col justify-between h-full max-w-6xl px-10 mx-auto xl:px-0 mt-5">
-    <div class="w-full">
-        <div class="flex flex-col w-full mb-10 sm:flex-row">
-            <div class="w-full mb-10 sm:mb-0 sm:w-1/2">
-                <div class="relative h-full ml-0 mr-0 sm:mr-10">
-                    <span class="absolute top-0 left-0 w-full h-full mt-1 ml-1 bg-zinc-700 rounded-lg"></span>
-                    <div class="relative h-full p-5 bg-white border-2 border-zinc-700 rounded-lg">
-                        <div class="flex items-center -mt-1">
-                            <h3 class="my-2 ml-3 text-lg font-bold text-gray-800">Recent Announcements</h3>
-                        </div>
-                        <p class="mt-3 mb-1 text-xs font-medium text-indigo-500 uppercase">------------</p>
-                        <p class="mb-2 text-gray-600">A decentralized application (dapp) is an application built on a
-                            decentralized network that combines a smart contract and a frontend user interface.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="w-full sm:w-1/2">
-                <div class="relative h-full ml-0 md:mr-10">
-                    <span class="absolute top-0 left-0 w-full h-full mt-1 ml-1 bg-zinc-700 rounded-lg"></span>
-                    <div class="relative h-full p-5 bg-white border-2 border-zinc-700 rounded-lg">
-                        <div class="flex items-center -mt-1">
-                            <h3 class="my-2 ml-3 text-lg font-bold text-gray-800">Recent Discussions</h3>
-                        </div>
-                        <p class="mt-3 mb-1 text-xs font-medium text-purple-500 uppercase">------------</p>
-                        <p class="mb-2 text-gray-600">Web 3.0 is the third generation of Internet services that will
-                            focus on understanding and analyzing data to provide a semantic web.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="flex flex-col w-full mb-5 sm:flex-row">
-            <div class="w-full mb-10 sm:mb-0 sm:w-1/2">
-                <div class="relative h-full ml-0 mr-0 sm:mr-10">
-                    <span class="absolute top-0 left-0 w-full h-full mt-1 ml-1 bg-zinc-700 rounded-lg"></span>
-                    <div class="relative h-full p-5 bg-white border-2 border-zinc-700 rounded-lg">
-                        <div class="flex items-center -mt-1">
-                            <h3 class="my-2 ml-3 text-lg font-bold text-gray-800">Latest Polls</h3>
-                        </div>
-                        <p class="mt-3 mb-1 text-xs font-medium text-blue-400 uppercase">------------</p>
-                        <p class="mb-2 text-gray-600">A Project Audit is a formal review of a project, which is intended
-                            to assess the extent up to which project management standards are being upheld.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="w-full mb-10 sm:mb-0 sm:w-1/2">
-                <div class="relative h-full ml-0 mr-0 sm:mr-10">
-                    <span class="absolute top-0 left-0 w-full h-full mt-1 ml-1 bg-zinc-700 rounded-lg"></span>
-                    <div class="relative h-full p-5 bg-white border-2 border-zinc-700 rounded-lg">
-                        <div class="flex items-center -mt-1">
-                            <h3 class="my-2 ml-3 text-lg font-bold text-gray-800">Complaints Stats</h3>
-                        </div>
-                        <p class="mt-3 mb-1 text-xs font-medium text-yellow-400 uppercase">------------</p>
-                        <p class="mb-2 text-gray-600">A security hacker is someone who explores methods for breaching
-                            defenses and exploiting weaknesses in a computer system or network.</p>
-                    </div>
-                </div>
-            </div>
+                        <div class="container relative flex flex-col justify-between h-full max-w-6xl px-10 mx-auto xl:px-0 mt-5">
+                        <div class="w-full"> 
+                        <div class="flex flex-col w-full mb-10 sm:flex-row"> 
 
-            <div class="w-full sm:w-1/2">
-                <div class="relative h-full ml-0 md:mr-10">
-                    <span class="absolute top-0 left-0 w-full h-full mt-1 ml-1 bg-zinc-700 rounded-lg"></span>
-                    <div class="relative h-full p-5 bg-white border-2 border-zinc-700 rounded-lg">
-                        <div class="flex items-center -mt-1">
-                            <h3 class="my-2 ml-3 text-lg font-bold text-gray-800">Recent Upgradations</h3>
-                                
+                                    <div class="w-full mb-10 sm:mb-0 sm:w-1/2">
+                                        <div class="relative h-full ml-0 mr-0 sm:mr-10">
+                                            <span class="absolute top-0 left-0 w-full h-full mt-1 ml-1 bg-zinc-700 rounded-lg"></span>
+                                            <div class="relative h-full p-5 bg-white border-2 border-zinc-700 rounded-lg">
+                                                <div class="flex items-center -mt-1">
+                                                    <h3 class="my-2 ml-3 text-lg font-bold text-gray-800">Recent Announcements</h3>
+                                                </div>
+                                                <p class="mt-3 mb-1 text-xs font-medium text-indigo-500 uppercase">------------</p>
+                                                {/* <p class="mb-2 text-gray-600">A decentralized application (dapp) is an application built on a
+                                                    decentralized network that combines a smart contract and a frontend user interface.</p> */} 
+                                                    <p className="mb-2 text-gray-600">{recentAnnouncements[0]?.content || "No recent announcements."}</p>
+                                            </div>
+                                        </div>
+                                    </div> 
+
+                                    <div class="w-full sm:w-1/2">
+                                        <div class="relative h-full ml-0 md:mr-10">
+                                            <span class="absolute top-0 left-0 w-full h-full mt-1 ml-1 bg-zinc-700 rounded-lg"></span>
+                                            <div class="relative h-full p-5 bg-white border-2 border-zinc-700 rounded-lg">
+                                                <div class="flex items-center -mt-1">
+                                                    <h3 class="my-2 ml-3 text-lg font-bold text-gray-800">Recent Discussions</h3>
+                                                </div>
+                                                <p class="mt-3 mb-1 text-xs font-medium text-purple-500 uppercase">------------</p>
+                                                {/* <p class="mb-2 text-gray-600">Web 3.0 is the third generation of Internet services that will
+                                                    focus on understanding and analyzing data to provide a semantic web.</p> */} 
+                                                    <p className="mb-2 text-gray-600">{recentDiscussions[0]?.content || "No recent discussions."}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> 
+
+                                <div class="flex flex-col w-full mb-5 sm:flex-row"> 
+
+                                            <div class="w-full mb-10 sm:mb-0 sm:w-1/2">
+                                                <div class="relative h-full ml-0 mr-0 sm:mr-10">
+                                                    <span class="absolute top-0 left-0 w-full h-full mt-1 ml-1 bg-zinc-700 rounded-lg"></span>
+                                                    <div class="relative h-full p-5 bg-white border-2 border-zinc-700 rounded-lg">
+                                                        <div class="flex items-center -mt-1">
+                                                            <h3 class="my-2 ml-3 text-lg font-bold text-gray-800">Latest Polls</h3>
+                                                        </div>
+                                                        <p class="mt-3 mb-1 text-xs font-medium text-blue-400 uppercase">------------</p>
+                                                        {/* <p class="mb-2 text-gray-600">A Project Audit is a formal review of a project, which is intended
+                                                            to assess the extent up to which project management standards are being upheld.</p> */} 
+                                                            <p className="mb-2 text-gray-600">{recentPolls[0]?.content || "No recent polls."}</p>
+                                                    </div>
+                                                </div>
+                                            </div> 
+
+                                            <div class="w-full mb-10 sm:mb-0 sm:w-1/2">
+                                                <div class="relative h-full ml-0 mr-0 sm:mr-10">
+                                                    <span class="absolute top-0 left-0 w-full h-full mt-1 ml-1 bg-zinc-700 rounded-lg"></span>
+                                                    <div class="relative h-full p-5 bg-white border-2 border-zinc-700 rounded-lg">
+                                                        <div class="flex items-center -mt-1">
+                                                            <h3 class="my-2 ml-3 text-lg font-bold text-gray-800">Complaints Stats</h3>
+                                                        </div>
+                                                        <p class="mt-3 mb-1 text-xs font-medium text-yellow-400 uppercase">------------</p>
+                                                        <p class="mb-2 text-gray-600">A security hacker is someone who explores methods for breaching
+                                                            defenses and exploiting weaknesses in a computer system or network.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="w-full sm:w-1/2">
+                                                <div class="relative h-full ml-0 md:mr-10">
+                                                    <span class="absolute top-0 left-0 w-full h-full mt-1 ml-1 bg-zinc-700 rounded-lg"></span>
+                                                    <div class="relative h-full p-5 bg-white border-2 border-zinc-700 rounded-lg">
+                                                        <div class="flex items-center -mt-1">
+                                                            <h3 class="my-2 ml-3 text-lg font-bold text-gray-800">Recent Upgradations</h3>
+                                                                
+                                                        </div>
+                                                        <p class="mt-3 mb-1 text-xs font-medium text-green-500 uppercase">------------</p>
+                                                        <p class="mb-2 text-gray-600">Bot development frameworks were created as advanced software tools
+                                                            that eliminate a large amount of manual work and accelerate the development process.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                    
+                                </div>
+                            </div>
                         </div>
-                        <p class="mt-3 mb-1 text-xs font-medium text-green-500 uppercase">------------</p>
-                        <p class="mb-2 text-gray-600">Bot development frameworks were created as advanced software tools
-                            that eliminate a large amount of manual work and accelerate the development process.</p>
-                    </div>
-                </div>
-            </div>
-            
-        </div>
-    </div>
-</div>
                             </div>
                         </div>
                     </main>
